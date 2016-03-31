@@ -1,0 +1,17 @@
+---
+Language:                                       Cpp
+BasedOnStyle:                                   Chromium
+Standard:                                       Cpp11
+AccessModifierOffset:                           -4
+AlignConsecutiveAssignments:                    true
+AllowShortFunctionsOnASingleLine:               All
+BreakConstructorInitializersBeforeComma:        true
+BinPackArguments:                               false
+BinPackParameters:                              false
+ColumnLimit:                                    120
+IndentCaseLabels:                               false
+IndentWidth:                                    4
+NamespaceIndentation:                           None
+SpacesBeforeTrailingComments:                   1
+TabWidth:                                       4
+...

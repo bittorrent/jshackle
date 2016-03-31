@@ -1,3 +1,14 @@
+################
+# CI Tacklebox #
+################
+/.build
+/.configure
+*.tackle
+/include/scraps/*-config.h
+*.checksum
+/project-config.jam
+
+
 # Compiled Object files
 *.slo
 *.lo
