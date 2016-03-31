@@ -6,6 +6,7 @@
 #include "jshackle/utility.h"
 
 #include <mutex>
+#include <string>
 
 namespace jshackle {
 

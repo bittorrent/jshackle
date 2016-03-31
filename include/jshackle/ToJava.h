@@ -6,6 +6,8 @@
 #include "jshackle/JNIContext.h"
 
 #include <mutex>
+#include <string>
+#include <vector>
 
 namespace jshackle {
 
