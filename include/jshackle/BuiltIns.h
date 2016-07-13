@@ -13,6 +13,8 @@ inline void RegisterBuiltIns(JNIContext* context) {
     ::android::content::res::AssetManager::Traits::Register(context, "android/content/res/AssetManager");
     ::android::content::Intent::Traits::Register(context, "android/content/Intent");
     ::android::content::Context::Traits::Register(context, "android/content/Context");
+    ::android::content::SharedPreferences::Traits::Register(context, "android/content/SharedPreferences");
+    ::android::content::SharedPreferences::Editor::Traits::Register(context, "android/content/SharedPreferences$Editor");
     ::android::app::Activity::Traits::Register(context, "android/app/Activity");
 }
 
