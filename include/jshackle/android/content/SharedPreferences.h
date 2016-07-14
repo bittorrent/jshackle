@@ -12,6 +12,7 @@ JSHACKLE_JAVA_CLASS_BEGIN(SharedPreferences);
 
         JSHACKLE_JAVA_CLASS_METHOD(Editor*, putString, const std::string&, const std::string&);
         JSHACKLE_JAVA_CLASS_METHOD(Editor*, putInt, const std::string&, int);
+        JSHACKLE_JAVA_CLASS_METHOD(Editor*, putLong, const std::string&, long long);
         JSHACKLE_JAVA_CLASS_METHOD(Editor*, putFloat, const std::string&, float);
         JSHACKLE_JAVA_CLASS_METHOD(Editor*, putBoolean, const std::string&, bool);
     JSHACKLE_JAVA_CLASS_END();
@@ -22,6 +23,7 @@ JSHACKLE_JAVA_CLASS_BEGIN(SharedPreferences);
 
     JSHACKLE_JAVA_CLASS_METHOD(std::string, getString, const std::string&, std::string);
     JSHACKLE_JAVA_CLASS_METHOD(int, getInt, const std::string&, int);
+    JSHACKLE_JAVA_CLASS_METHOD(long long, getLong, const std::string&, long long);
     JSHACKLE_JAVA_CLASS_METHOD(float, getFloat, const std::string&, float);
     JSHACKLE_JAVA_CLASS_METHOD(bool, getBoolean, const std::string&, bool);
 JSHACKLE_JAVA_CLASS_END();
