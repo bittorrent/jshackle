@@ -1,3 +1,18 @@
+/**
+* Copyright 2016 BitTorrent Inc.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 #pragma once
 
 #include "jshackle/config.h"
@@ -43,14 +58,19 @@ struct JavaCaller : std::enable_shared_from_this<JavaCaller> {
     }
 
     template <typename Return, typename... Args>
-    Return callMethod(JNIEnv* env, jclass classRef, const char* name, const std::string& signature, Args&&... args) const {
+    Return callMethod(JNIEnv* env, jclass classRef, const char* name, const std::string& signature, Args&&... args)
+        const {
         auto mid = env->GetMethodID(classRef, name, signature.c_str());
-        return CallJavaMethodAndDeleteLocalRefArgs<Return>(
-            *context, env, globalRef, mid, std::forward<Args>(args)...);
+        return CallJavaMethodAndDeleteLocalRefArgs<Return>(*context, env, globalRef, mid, std::forward<Args>(args)...);
     }
 
     template <typename Return, typename... Args>
-    static Return callStaticMethod(JNIContext& context, JNIEnv* env, jclass classRef, const char* name, const std::string& signature, Args&&... args) {
+    static Return callStaticMethod(JNIContext& context,
+                                   JNIEnv* env,
+                                   jclass classRef,
+                                   const char* name,
+                                   const std::string& signature,
+                                   Args&&... args) {
         auto mid = env->GetStaticMethodID(classRef, name, signature.c_str());
         return CallStaticJavaMethodAndDeleteLocalRefArgs<Return>(
             context, env, classRef, mid, std::forward<Args>(args)...);
@@ -58,7 +78,7 @@ struct JavaCaller : std::enable_shared_from_this<JavaCaller> {
 
     JNIContext* context;
     jobject globalRef = nullptr;
-    bool isWeak = false;
+    bool isWeak       = false;
 };
 
 template <typename T>
@@ -77,7 +97,7 @@ struct JavaTraits {
     }
 
     static void RegisterClassRef(JNIContext* jniContext, const char* name) {
-        sName = name;
+        sName       = name;
         sJNIContext = jniContext;
 
         JavaAttachment attachment(sJNIContext->jvm, sJNIContext->jniVersion);
@@ -128,60 +148,89 @@ struct JavaClass {
 #define JSHACKLE_TO_JAVA_ARG(N, T) \
     , jshackle::ToJava<decltype(arg##N)>::Convert(*Traits::sJNIContext, attachment.env, arg##N)
 
-#define JSHACKLE_JAVA_CLASS_CONSTRUCTORS(NAME)                                   \
-    NAME() : BaseType{Traits::MakeCaller()} {}                                    \
-    NAME(std::nullptr_t) : BaseType{nullptr} {}                                   \
+#define JSHACKLE_JAVA_CLASS_CONSTRUCTORS(NAME)                                  \
+    NAME() : BaseType{Traits::MakeCaller()} {}                                  \
+    NAME(std::nullptr_t) : BaseType{nullptr} {}                                 \
     NAME(jshackle::JavaCaller& caller) : BaseType{caller.shared_from_this()} {} \
     NAME(JNIEnv* env, jobject obj) : BaseType{Traits::MakeCaller(env, obj)} {}
 
-#define JSHACKLE_JAVA_CLASS_CONSTRUCTOR(NAME, ...) \
-    NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) : BaseType{Traits::MakeCaller(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG_NAMES, (__VA_ARGS__)))} {}
+#define JSHACKLE_JAVA_CLASS_CONSTRUCTOR(NAME, ...)             \
+    NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) \
+        : BaseType{Traits::MakeCaller(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG_NAMES, (__VA_ARGS__)))} {}
 
-#define JSHACKLE_JAVA_CLASS_BEGIN(NAME, ...)                                                                       \
+#define JSHACKLE_JAVA_CLASS_BEGIN(NAME, ...)                                                                    \
     struct NAME : virtual public jshackle::JavaClass JSHACKLE_FOREACH(JSHACKLE_JAVA_CLASS_MULTIPLE_INHERITANCE, \
-                                                                           (__VA_ARGS__)) {                         \
-        using BaseType = jshackle::JavaClass;                                                                     \
-        using Traits = jshackle::JavaTraits<NAME>;                                                                \
+                                                                      (__VA_ARGS__)) {                          \
+        using BaseType = jshackle::JavaClass;                                                                   \
+        using Traits   = jshackle::JavaTraits<NAME>;                                                            \
     JSHACKLE_JAVA_CLASS_CONSTRUCTORS(NAME)
 
 #define JSHACKLE_JAVA_CLASS_END() \
-    }                              \
+    }                             \
     ;
 
-#define JSHACKLE_JAVA_INTERFACE_BEGIN(NAME, INTERFACE)                    \
+#define JSHACKLE_JAVA_INTERFACE_BEGIN(NAME, INTERFACE)                   \
     struct NAME : virtual public jshackle::JavaClass, public INTERFACE { \
         using BaseType = jshackle::JavaClass;                            \
-        using Traits = jshackle::JavaInterfaceTraits<NAME, INTERFACE>;   \
+        using Traits   = jshackle::JavaInterfaceTraits<NAME, INTERFACE>; \
     JSHACKLE_JAVA_CLASS_CONSTRUCTORS(NAME)
 
-#define JSHACKLE_JAVA_INTERFACE_END() };
+#define JSHACKLE_JAVA_INTERFACE_END() \
+    }                                 \
+    ;
 
-#define JSHACKLE_JAVA_CLASS_METHOD(RETURN_TYPE, NAME, ...)                                                                                       \
-    RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) {                                                                    \
-        assert(caller);                                                                                                                           \
-        jshackle::JavaAttachment attachment(caller->context->jvm, caller->context->jniVersion);                                                 \
-        const auto signature = jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(*caller->context); \
-        return caller->callMethod<RETURN_TYPE>(attachment.env, Traits::sClassRef,                                                                 \
-                                               #NAME, signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__)));                         \
+#define JSHACKLE_JAVA_CLASS_METHOD(RETURN_TYPE, NAME, ...)                                                       \
+    RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) {                                     \
+        assert(caller);                                                                                          \
+        jshackle::JavaAttachment attachment(caller->context->jvm, caller->context->jniVersion);                  \
+        const auto signature =                                                                                   \
+            jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(         \
+                *caller->context);                                                                               \
+        return caller->callMethod<RETURN_TYPE>(attachment.env,                                                   \
+                                               Traits::sClassRef,                                                \
+                                               #NAME,                                                            \
+                                               signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__))); \
     }
 
-#define JSHACKLE_JAVA_CLASS_CONST_METHOD(RETURN_TYPE, NAME, ...)                                                                                 \
-    RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) const {                                                              \
-        assert(caller);                                                                                                                           \
-        jshackle::JavaAttachment attachment(caller->context->jvm, caller->context->jniVersion);                                                 \
-        const auto signature = jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(*caller->context); \
-        return caller->callMethod<RETURN_TYPE>(attachment.env, Traits::sClassRef,                                                                 \
-                                               #NAME, signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__)));                         \
+#define JSHACKLE_JAVA_CLASS_METHOD_OVERRIDE(RETURN_TYPE, NAME, ...)                                              \
+    virtual RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) override {                    \
+        assert(caller);                                                                                          \
+        jshackle::JavaAttachment attachment(caller->context->jvm, caller->context->jniVersion);                  \
+        const auto signature =                                                                                   \
+            jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(         \
+                *caller->context);                                                                               \
+        return caller->callMethod<RETURN_TYPE>(attachment.env,                                                   \
+                                               Traits::sClassRef,                                                \
+                                               #NAME,                                                            \
+                                               signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__))); \
     }
 
-#define JSHACKLE_JAVA_CLASS_STATIC_METHOD(RETURN_TYPE, NAME, ...)                                                                                    \
-    static RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) {                                                                 \
-        assert(Traits::sJNIContext);                                                                                                                  \
-        jshackle::JavaAttachment attachment(Traits::sJNIContext->jvm, Traits::sJNIContext->jniVersion);                                             \
-        const auto signature = jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(*Traits::sJNIContext); \
-        return jshackle::JavaCaller::callStaticMethod<RETURN_TYPE>(                                                                                 \
-            *Traits::sJNIContext, attachment.env, Traits::sClassRef,                                                                                  \
-            #NAME, signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__)));                                                                \
+#define JSHACKLE_JAVA_CLASS_CONST_METHOD(RETURN_TYPE, NAME, ...)                                                 \
+    RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) const {                               \
+        assert(caller);                                                                                          \
+        jshackle::JavaAttachment attachment(caller->context->jvm, caller->context->jniVersion);                  \
+        const auto signature =                                                                                   \
+            jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>(         \
+                *caller->context);                                                                               \
+        return caller->callMethod<RETURN_TYPE>(attachment.env,                                                   \
+                                               Traits::sClassRef,                                                \
+                                               #NAME,                                                            \
+                                               signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__))); \
+    }
+
+#define JSHACKLE_JAVA_CLASS_STATIC_METHOD(RETURN_TYPE, NAME, ...)                                        \
+    static RETURN_TYPE NAME(JSHACKLE_FOREACH(JSHACKLE_NUMBER_ARG, (__VA_ARGS__))) {                      \
+        assert(Traits::sJNIContext);                                                                     \
+        jshackle::JavaAttachment attachment(Traits::sJNIContext->jvm, Traits::sJNIContext->jniVersion);  \
+        const auto signature =                                                                           \
+            jshackle::JavaMethodSignature<RETURN_TYPE JSHACKLE_FOREACH(JSHACKLE_APPEND, (__VA_ARGS__))>( \
+                *Traits::sJNIContext);                                                                   \
+        return jshackle::JavaCaller::callStaticMethod<RETURN_TYPE>(                                      \
+            *Traits::sJNIContext,                                                                        \
+            attachment.env,                                                                              \
+            Traits::sClassRef,                                                                           \
+            #NAME,                                                                                       \
+            signature JSHACKLE_FOREACH(JSHACKLE_TO_JAVA_ARG, (__VA_ARGS__)));                            \
     }
 
 } // namespace jshackle

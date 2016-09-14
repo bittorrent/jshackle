@@ -7,6 +7,7 @@
 /include/scraps/*-config.h
 *.checksum
 /project-config.jam
+/jshackle.xcconfig
 
 
 # Compiled Object files
