@@ -8,7 +8,7 @@ But if you're curious, the basics look something like this:
 
 #### Exposing a Java class implementation to C++
 
-```
+```java
 public class JavaThing {
     public int foo() {
         return 0;
@@ -16,7 +16,7 @@ public class JavaThing {
 }
 ```
 
-```
+```c++
 JSHACKLE_JAVA_CLASS_BEGIN(JavaThing);
     JSHACKLE_JAVA_CLASS_METHOD(int, foo);
 JSHACKLE_JAVA_CLASS_END();
@@ -29,7 +29,7 @@ int main() {
 
 #### Exposing a C++ implementation to Java
 
-```
+```c++
 class CPPThing {
 public:
     int foo() {
@@ -42,7 +42,7 @@ JSHACKLE_NATIVE_CLASS_BEGIN(NativeCPPThing, CPPThing);
 JSHACKLE_NATIVE_CLASS_END();
 ```
 
-```
+```java
 public class NativeCPPThing {
     public native int foo();
 
