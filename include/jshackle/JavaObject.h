@@ -57,18 +57,18 @@ struct JavaObject {
     jobject _object = nullptr;
 };
 
-#define JSHACKLE_JAVA_OBJECT_TYPE(TYPE, NAME)                                                      \
-    struct TYPE : jshackle::JavaObject {                                                  \
-        using jshackle::JavaObject::JavaObject;                                           \
+#define JSHACKLE_JAVA_OBJECT_TYPE(TYPE, NAME)                                                    \
+    struct TYPE : jshackle::JavaObject {                                                         \
+        using jshackle::JavaObject::JavaObject;                                                  \
         static constexpr const char* Name() { return NAME; }                                     \
         TYPE& operator=(const TYPE& other) {                                                     \
             if (_object) {                                                                       \
-                jshackle::JavaAttachment attachment(_context->jvm, _context->jniVersion); \
+                jshackle::JavaAttachment attachment(_context->jvm, _context->jniVersion);        \
                 attachment.env->DeleteGlobalRef(_object);                                        \
             }                                                                                    \
             _context = other._context;                                                           \
             if (other._object) {                                                                 \
-                jshackle::JavaAttachment attachment(_context->jvm, _context->jniVersion); \
+                jshackle::JavaAttachment attachment(_context->jvm, _context->jniVersion);        \
                 _object = attachment.env->NewGlobalRef(other._object);                           \
             } else { _object = nullptr; }                                                        \
             return *this;                                                                        \

@@ -143,6 +143,26 @@ struct JavaClass {
     std::shared_ptr<JavaCaller> caller;
 };
 
+struct JavaClassRefBase {};
+
+template <typename T, bool local = true>
+struct JavaClassRef : JavaClassRefBase {
+    using JavaClassType = T;
+
+    JavaClassRef(JNIContext* context, jobject object) : _context{context}, _object{object} {}
+
+    ~JavaClassRef() {
+        if (_context && _object) {
+            JavaAttachment attachment(_context->jvm, _context->jniVersion);
+            if (local) { attachment.env->DeleteLocalRef(_object); }
+            else       { attachment.env->DeleteGlobalRef(_object); }
+        }
+    }
+
+    JNIContext* _context = nullptr;
+    jobject     _object = nullptr;
+};
+
 // helper macros
 #define JSHACKLE_JAVA_CLASS_MULTIPLE_INHERITANCE(N, T) , public T
 #define JSHACKLE_TO_JAVA_ARG(N, T) \

@@ -89,7 +89,8 @@ struct ObjToNative {
 };
 
 template <typename Hint>
-struct ObjToNative<Hint, typename std::enable_if<std::is_base_of<JavaObject, Hint>::value, void>::type> {
+struct ObjToNative<Hint, typename std::enable_if<std::is_base_of<JavaObject, Hint>::value ||
+                                                 std::is_base_of<JavaClassRefBase, Hint>::value, void>::type> {
     typedef Hint Type;
 
     static Type Convert(JNIContext& jniContext, JNIEnv* env, jobject obj) { return Hint(&jniContext, obj); }

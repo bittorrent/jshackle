@@ -28,6 +28,7 @@ namespace jshackle {
 
 struct JavaObject;
 struct JavaClass;
+struct JavaClassRefBase;
 
 template <typename T>
 void NoDelete(void* ptr) {}
@@ -204,6 +205,15 @@ struct ToJava<T, typename std::enable_if<std::is_base_of<JavaClass, T>::value, v
         return std::string("L") + T::Traits::sName + ';';
     }
     static Type Convert(JNIContext& jniContext, JNIEnv* env, T obj) { return obj.caller->globalRef; }
+};
+
+template <typename T>
+struct ToJava<T, typename std::enable_if<std::is_base_of<JavaClassRefBase, T>::value, void>::type> {
+    using Type = jobject;
+    static std::string Signature(JNIContext& jniContext) {
+        return std::string("L") + T::JavaClassType::Traits::sName + ';';
+    }
+    static Type Convert(JNIContext& jniContext, JNIEnv* env, T obj) { return obj._object; }
 };
 
 template <typename T>
