@@ -1,0 +1,5 @@
+sudo: required
+language: generic
+script:
+    - sudo pip install git+https://github.com/bittorrent/simon.git@master#egg=simon
+    - simon license check --license=apache

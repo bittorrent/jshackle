@@ -1,2 +1,0 @@
-script:
-    - live license check --license=apache
