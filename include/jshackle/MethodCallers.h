@@ -164,12 +164,13 @@ inline void CallStaticJavaMethod<void>(JNIContext& jniContext, JNIEnv* env, jcla
     va_end(args);
 }
 
+template <typename T>
+inline std::enable_if_t<!std::is_convertible_v<T, jobject>, void>
+GetLocalRef(JNIEnv* env, std::vector<jobject>& dest, T nonobj) {}
 
 template <typename T>
-inline void GetLocalRef(JNIEnv* env, std::vector<jobject>& dest, T nonobj) {}
-
-template <>
-inline void GetLocalRef<jobject>(JNIEnv* env, std::vector<jobject>& dest, jobject obj) {
+inline std::enable_if_t<std::is_convertible_v<T, jobject>, void>
+GetLocalRef(JNIEnv* env, std::vector<jobject>& dest, T obj) {
     if (env->GetObjectRefType(obj) == JNILocalRefType) { dest.push_back(obj); }
 }
 
