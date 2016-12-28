@@ -93,7 +93,6 @@ struct StaticJavaMethodCaller<
     }
 };
 
-
 template <typename T>
 struct JavaMethodCaller<T,
                         typename std::enable_if<std::is_same<typename ToJava<T>::Type, jobject>::value, void>::type> {
@@ -116,7 +115,9 @@ struct JavaMethodCaller<T,
                         typename std::enable_if<std::is_same<typename ToJava<T>::Type, jstring>::value, void>::type> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         const auto result = static_cast<jstring>(env->CallObjectMethodV(object, method, args));
-        return ToNative<jstring, T>::Convert(jniContext, env, result);
+        auto ret = ToNative<jstring, T>::Convert(jniContext, env, result);
+        env->DeleteLocalRef(result);
+        return ret;
     }
 };
 
@@ -126,7 +127,9 @@ struct StaticJavaMethodCaller<
     typename std::enable_if<std::is_same<typename ToJava<T>::Type, jstring>::value, void>::type> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         const auto result = static_cast<jstring>(env->CallStaticObjectMethodV(clazz, method, args));
-        return ToNative<jstring, T>::Convert(jniContext, env, result);
+        auto ret = ToNative<jstring, T>::Convert(jniContext, env, result);
+        env->DeleteLocalRef(result);
+        return ret;
     }
 };
 
