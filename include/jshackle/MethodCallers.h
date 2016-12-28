@@ -30,89 +30,77 @@ template <typename T, typename Enable = void>
 struct StaticJavaMethodCaller {};
 
 template <typename T>
-struct JavaMethodCaller<T, typename std::enable_if<std::is_same<typename ToJava<T>::Type, jint>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jint>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jint, T>::Convert(jniContext, env, env->CallIntMethodV(object, method, args));
     }
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jint>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jint>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         return ToNative<jint, T>::Convert(jniContext, env, env->CallStaticIntMethodV(clazz, method, args));
     }
 };
 
 template <typename T>
-struct JavaMethodCaller<T, typename std::enable_if<std::is_same<typename ToJava<T>::Type, jlong>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jlong>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jlong, T>::Convert(jniContext, env, env->CallLongMethodV(object, method, args));
     }
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jlong>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jlong>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         return ToNative<jlong, T>::Convert(jniContext, env, env->CallStaticLongMethodV(clazz, method, args));
     }
 };
 
 template <typename T>
-struct JavaMethodCaller<T, typename std::enable_if<std::is_same<typename ToJava<T>::Type, jboolean>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jboolean>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jboolean, T>::Convert(jniContext, env, env->CallBooleanMethodV(object, method, args));
     }
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jboolean>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jboolean>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         return ToNative<jboolean, T>::Convert(jniContext, env, env->CallStaticBooleanMethodV(clazz, method, args));
     }
 };
 
 template <typename T>
-struct JavaMethodCaller<T, typename std::enable_if<std::is_same<typename ToJava<T>::Type, jfloat>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jfloat>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jfloat, T>::Convert(jniContext, env, env->CallFloatMethodV(object, method, args));
     }
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jfloat>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jfloat>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         return ToNative<jfloat, T>::Convert(jniContext, env, env->CallStaticFloatMethodV(clazz, method, args));
     }
 };
 
 template <typename T>
-struct JavaMethodCaller<T,
-                        typename std::enable_if<std::is_same<typename ToJava<T>::Type, jobject>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jobject>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jobject, T>::Convert(jniContext, env, env->CallObjectMethodV(object, method, args));
     }
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jobject>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jobject>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         return ToNative<jobject, T>::Convert(jniContext, env, env->CallStaticObjectMethodV(clazz, method, args));
     }
 };
 
 template <typename T>
-struct JavaMethodCaller<T,
-                        typename std::enable_if<std::is_same<typename ToJava<T>::Type, jstring>::value, void>::type> {
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jstring>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         const auto result = static_cast<jstring>(env->CallObjectMethodV(object, method, args));
         auto ret = ToNative<jstring, T>::Convert(jniContext, env, result);
@@ -122,9 +110,7 @@ struct JavaMethodCaller<T,
 };
 
 template <typename T>
-struct StaticJavaMethodCaller<
-    T,
-    typename std::enable_if<std::is_same<typename ToJava<T>::Type, jstring>::value, void>::type> {
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jstring>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
         const auto result = static_cast<jstring>(env->CallStaticObjectMethodV(clazz, method, args));
         auto ret = ToNative<jstring, T>::Convert(jniContext, env, result);

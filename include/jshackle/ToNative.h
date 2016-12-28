@@ -36,7 +36,7 @@ struct ToNative {};
 template <typename Hint, typename Enable = void>
 struct ObjToNative {
     typedef Hint Type;
-    using DecayedType = typename std::decay<typename std::remove_pointer<Hint>::type>::type;
+    using DecayedType = std::decay_t<std::remove_pointer_t<Hint>>;
 
     static Type Convert(JNIContext& jniContext, JNIEnv* env, jobject obj) {
         std::lock_guard<std::mutex> lock{jniContext.mutex};
@@ -49,7 +49,7 @@ struct ObjToNative {
             if (handle) {
                 for (auto& kv : jniContext.nativeClasses) {
                     if (env->IsSameObject(c, kv.second.javaClass)) {
-                        auto it2 = kv.second.pointerConversions.find(TypeIdentifier<typename std::remove_pointer<Hint>::type>()());
+                        auto it2 = kv.second.pointerConversions.find(TypeIdentifier<std::remove_pointer_t<Hint>>()());
                         if (it2 != kv.second.pointerConversions.end()) { return reinterpret_cast<Hint>(handle + it2->second); }
                         break;
                     }
@@ -89,8 +89,8 @@ struct ObjToNative {
 };
 
 template <typename Hint>
-struct ObjToNative<Hint, typename std::enable_if<std::is_base_of<JavaObject, Hint>::value ||
-                                                 std::is_base_of<JavaClassRefBase, Hint>::value, void>::type> {
+struct ObjToNative<Hint, std::enable_if_t<std::is_base_of_v<JavaObject, Hint> ||
+                                          std::is_base_of_v<JavaClassRefBase, Hint>, void>> {
     typedef Hint Type;
 
     static Type Convert(JNIContext& jniContext, JNIEnv* env, jobject obj) { return Hint(&jniContext, obj); }

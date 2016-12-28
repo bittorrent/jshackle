@@ -37,9 +37,9 @@ template <typename T, typename Enable = void>
 struct ToJava {};
 
 template <typename T>
-struct ToJava<T, typename std::enable_if<std::is_pointer<T>::value, void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_pointer_v<T>, void>> {
     using Type = jobject;
-    using DecayedType = typename std::decay<typename std::remove_pointer<T>::type>::type;
+    using DecayedType = std::decay_t<std::remove_pointer_t<T>>;
 
     static jobject Convert(JNIContext& jniContext, JNIEnv* env, T obj) {
         std::lock_guard<std::mutex> lock{jniContext.mutex};
@@ -96,44 +96,35 @@ struct ToJava<T, typename std::enable_if<std::is_pointer<T>::value, void>::type>
 };
 
 template <typename T>
-struct ToJava<T, typename std::enable_if<std::is_reference<T>::value, void>::type>
-    : ToJava<typename std::remove_reference<T>::type> {};
+struct ToJava<T, std::enable_if_t<std::is_reference_v<T>, void>> : ToJava<std::remove_reference_t<T>> {};
 
 template <typename T>
-struct ToJava<T,
-              typename std::enable_if<std::is_integral<typename std::remove_cv<T>::type>::value &&
-                                          sizeof(typename std::remove_cv<T>::type) == 1,
-                                      void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_integral_v<std::remove_cv_t<T>> &&
+                                  sizeof(std::remove_cv_t<T>) == 1, void>> {
     using Type = jbyte;
     static constexpr const char* Signature(JNIContext& jniContext) { return "B"; }
     static Type Convert(JNIContext& jniContext, JNIEnv* env, T n) { return static_cast<Type>(n); }
 };
 
 template <typename T>
-struct ToJava<T,
-              typename std::enable_if<std::is_integral<typename std::remove_cv<T>::type>::value &&
-                                          sizeof(typename std::remove_cv<T>::type) == 2,
-                                      void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_integral_v<std::remove_cv_t<T>> &&
+                                  sizeof(std::remove_cv_t<T>) == 2, void>> {
     using Type = jshort;
     static constexpr const char* Signature(JNIContext& jniContext) { return "S"; }
     static Type Convert(JNIContext& jniContext, JNIEnv* env, T n) { return static_cast<Type>(n); }
 };
 
 template <typename T>
-struct ToJava<T,
-              typename std::enable_if<std::is_integral<typename std::remove_cv<T>::type>::value &&
-                                          sizeof(typename std::remove_cv<T>::type) == 4,
-                                      void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_integral_v<std::remove_cv_t<T>> &&
+                                  sizeof(std::remove_cv_t<T>) == 4, void>> {
     using Type = jint;
     static constexpr const char* Signature(JNIContext& jniContext) { return "I"; }
     static Type Convert(JNIContext& jniContext, JNIEnv* env, T n) { return static_cast<Type>(n); }
 };
 
 template <typename T>
-struct ToJava<T,
-              typename std::enable_if<std::is_integral<typename std::remove_cv<T>::type>::value &&
-                                          sizeof(typename std::remove_cv<T>::type) == 8,
-                                      void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_integral_v<std::remove_cv_t<T>> &&
+                                  sizeof(std::remove_cv_t<T>) == 8, void>> {
     using Type = jlong;
     static constexpr const char* Signature(JNIContext& jniContext) { return "J"; }
     static Type Convert(JNIContext& jniContext, JNIEnv* env, T n) { return static_cast<Type>(n); }
@@ -174,7 +165,7 @@ struct ToJava<const char*> {
 };
 
 template <typename T>
-struct ToJava<T, typename std::enable_if<std::is_base_of<JavaObject, T>::value, void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_base_of_v<JavaObject, T>, void>> {
     using Type = jobject;
     static std::string Signature(JNIContext& jniContext) {
         return std::string("L") + T::Name() + ';';
@@ -199,7 +190,7 @@ struct ToJava<const std::string> {
 };
 
 template <typename T>
-struct ToJava<T, typename std::enable_if<std::is_base_of<JavaClass, T>::value, void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_base_of_v<JavaClass, T>, void>> {
     using Type = jobject;
     static std::string Signature(JNIContext& jniContext) {
         return std::string("L") + T::Traits::sName + ';';
@@ -208,7 +199,7 @@ struct ToJava<T, typename std::enable_if<std::is_base_of<JavaClass, T>::value, v
 };
 
 template <typename T>
-struct ToJava<T, typename std::enable_if<std::is_base_of<JavaClassRefBase, T>::value, void>::type> {
+struct ToJava<T, std::enable_if_t<std::is_base_of_v<JavaClassRefBase, T>, void>> {
     using Type = jobject;
     static std::string Signature(JNIContext& jniContext) {
         return std::string("L") + T::JavaClassType::Traits::sName + ';';

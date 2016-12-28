@@ -26,12 +26,12 @@ struct JNIContext;
 struct NoArg {};
 
 template <typename T = NoArg>
-typename std::enable_if<std::is_same<T, NoArg>::value, std::string>::type JavaTypeSignature(JNIContext& jniContext) {
+std::enable_if_t<std::is_same_v<T, NoArg>, std::string> JavaTypeSignature(JNIContext& jniContext) {
     return "";
 }
 
 template <typename T>
-typename std::enable_if<!std::is_same<T, NoArg>::value, std::string>::type JavaTypeSignature(JNIContext& jniContext) {
+std::enable_if_t<!std::is_same_v<T, NoArg>, std::string> JavaTypeSignature(JNIContext& jniContext) {
     return ToJava<T>::Signature(jniContext);
 }
 
