@@ -86,6 +86,20 @@ struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava
 };
 
 template <typename T>
+struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jdouble>, void>> {
+    static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
+        return ToNative<jdouble, T>::Convert(jniContext, env, env->CallDoubleMethodV(object, method, args));
+    }
+};
+
+template <typename T>
+struct StaticJavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jdouble>, void>> {
+    static T Call(JNIContext& jniContext, JNIEnv* env, jclass clazz, jmethodID method, va_list& args) {
+        return ToNative<jdouble, T>::Convert(jniContext, env, env->CallStaticDoubleMethodV(clazz, method, args));
+    }
+};
+
+template <typename T>
 struct JavaMethodCaller<T, std::enable_if_t<std::is_same_v<typename ToJava<T>::Type, jobject>, void>> {
     static T Call(JNIContext& jniContext, JNIEnv* env, jobject object, jmethodID method, va_list& args) {
         return ToNative<jobject, T>::Convert(jniContext, env, env->CallObjectMethodV(object, method, args));
